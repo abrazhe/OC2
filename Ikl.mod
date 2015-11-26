@@ -1,4 +1,4 @@
-TITLE Low voltage activated K+ current for octopus cells
+TITLE Low voltage activated K+ current for octopus cells //change
 
 UNITS {
     (mV) = (millivolt)
