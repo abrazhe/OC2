@@ -1,4 +1,6 @@
 TITLE Low voltage activated K+ current for octopus cells
+:based on eqns from Rothman & Manis 2003c
+:"The roles K_currents play in regulating the electrical activity of VCN neurons"
 
 UNITS {
     (mV) = (millivolt)
