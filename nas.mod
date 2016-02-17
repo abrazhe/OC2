@@ -1,5 +1,6 @@
 TITLE Na current for [Spencer et al., 2012]'s octopus cell model initial segment. 
 
+
 NEURON {
     SUFFIX nas
     USEION na READ ena WRITE ina
