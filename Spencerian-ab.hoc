@@ -17,11 +17,14 @@ soma {
     
     insert kltab ek_kltab = -70 // following RM-03
     insert hcno eh_hcno = -38   // taken from BO-00
+    insert ihsab eh_ihsab = -38   // as in Spencer
     insert khtab ek_khtab = -70 // after RM-03
     
     gbar_kltab = 0.0407 // mho/cm2, following Spencer12
     gbar_khtab = 0.006  // mho/cm2, ---------//--------
-    gbar_hcno = 0.0076     // mho/cm2, ---------//--------
+    //gbar_hcno = 0.0076     // mho/cm2, ---------//--------
+    gbar_hcno = 0 // swit it off
+    gbar_ihsab = 0.0076 // following Spencer12
     
     
 }
@@ -32,15 +35,15 @@ soma {
 
 ax_stub {
     diam = 3
-    L = 10
-    Ra = 100
+    L = 30
+    Ra = 150
 }
 
 ax_init {
     diam = 3
     L = 2
-    Ra = 100
-    insert naab ena = 55 gbar_naab = 4.244
+    insert nasab ena = 55 gbar_nasab = 4.244
+    //insert naab ena = 55 gbar_naab = 4.244
 }
 
 for i = 0, ndend-1 dendrites[i] {
@@ -49,6 +52,7 @@ for i = 0, ndend-1 dendrites[i] {
     nseg = 20
     insert kltab ek_kltab = -70 
     insert hcno eh_hcno = -38
+    insert ihsab eh_ihsab = -38   // as in Spencer
     
     gbar_kltab = soma.gbar_kltab*0.1
     gbar_hcno = soma.gbar_hcno*0.1
@@ -58,9 +62,10 @@ for i = 0, ndend-1 dendrites[i] {
 
 forall {
     Ra = 150 // RM-03, BO-00
+    //Ra = 100  //Spencer
     cm = 1
     insert leak  // leak is from RM-03   
-    gbar_leak = 0.002 // Spencer12
+    gbar_leak = 0.0002 // 0.1*Spencer12
     
 }
 
@@ -72,13 +77,31 @@ access soma
 
 // --- Stimulation ---
 
-objectvar soma_stim
-soma soma_stim = new IClamp(0.5)
+objectvar soma_stim[2]
 
-soma_stim.del = 100
-soma_stim.dur = 100
-soma_stim.amp = 0.1
+soma soma_stim[0] = new IClamp(0.5)
+soma soma_stim[1] = new IClamp(0.5)
 
+
+proc two_pulse_stim() {
+    
+    for i =0,1 {
+        soma_stim[i].dur = 32
+        soma_stim[i].amp = $1 // nA
+        soma_stim[i].del = 200
+    }
+    soma_stim[1].dur = 16
+    soma_stim[1].del = 200 + 16
+    run()
+}
+
+proc hyperpol_stim() {
+    soma_stim[0].amp = $1
+    soma_stim[0].del = 250
+    soma_stim[0].dur = 50
+    soma_stim[1].amp = 0
+    run()
+} 
 
 // --- done stimulation ---
 
@@ -92,36 +115,31 @@ for i=0, ndend-1 {
 }
 // --- done connections --- 
 
-
-
-
-celsius = 37
+celsius = 33
 
 // --- Numerics --- 
 //dt = 0.01
-tstop = 300
-v_init = -65
+tstop = 500
+v_init = -61
 
 // --- Graphs ---
 
 objref vg
 
+
 vg = new Graph()
 
 addplot(vg, 0)
-vg.size(0, tstop, -80, 20)
+vg.size(0, tstop, -80, -20)
 vg.addvar("soma.v(0.5)", 1, 1, 0.6, 0.9, 2)
+//vg.addvar("ax_init.v(0.5)", 2, 1, 0.6, 0.9, 2)
 vg.exec_menu("Keep Lines")
 
 // --- Running this sh*t --- 
 //initialize()
-run()
+
+two_pulse_stim(5)
 
 //celsius = 37
 
-soma_stim.amp = -0.1
-run()
-
-
-soma_stim.amp = 5.0
-run()
+hyperpol_stim(-10)

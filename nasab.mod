@@ -1,10 +1,4 @@
-TITLE Sodium current after Rothman and Manis 2003
-
-COMMENT
-
-This is a slight modification of the kht.mod from ModelDB 37857
-
-ENDCOMMENT
+TITLE Sodium current after Spencer 2012
 
 
 UNITS {
@@ -14,7 +8,7 @@ UNITS {
 
 
 NEURON {
-    SUFFIX naab
+    SUFFIX nasab
     USEION na READ ena WRITE ina
     RANGE gbar, gna, ina
     GLOBAL hinf, minf, htau, mtau
@@ -22,7 +16,7 @@ NEURON {
 
 PARAMETER {
     celsius (degC)
-    treference = 22 (degC) : room temp in Baltimore :)
+    treference= 33 (degC) : room temp in Baltimore :)
     ena (mV)
     gbar = 0.07958 (mho/cm2) : that is what RM-03 used
     q10 = 3.0
@@ -59,15 +53,22 @@ DERIVATIVE states {
     h' = q10*(hinf - h)/htau
 }
 
-LOCAL qt
+LOCAL qt, malpha, mbeta, halpha, hbeta
 
 PROCEDURE setrates() {: computes minf, hinf, mtau, htau at current v
     qt = q10^((celsius - treference)/10.0)
     
-    minf = 1 / (1+exp(-(v + 38) / 7))
-    hinf = 1 / (1+exp((v + 65) / 6))
-
-    mtau =  (10 / (5*exp((v+60) / 18) + 36*exp(-(v+60) / 25))) + 0.04
-    htau =  (100 / (7*exp((v+60) / 11) + 10*exp(-(v+60) / 25))) + 0.6
+    malpha = -0.36*(v + 49)/(exp(-(v+49)/3)-1)
+    mbeta = 0.4*(v+58)/(exp((v+58)/20) -1)
+    
+    halpha = 2.4/(1 + exp((v+68)/3)) + 0.8/(1 + exp(v+61.3))
+    hbeta = 3.6/(1+exp(-(v+21)/10))
+    
+    minf = 1 / (1 + mbeta/malpha)
+    hinf = 1/ (1 + hbeta/halpha)
+    
+    mtau = 1/(malpha + mbeta)
+    htau = 1/(halpha + hbeta)
 }
+
 

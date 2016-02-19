@@ -12,12 +12,13 @@ NEURON {
 }
 
 PARAMETER {
-	v (mV)
-	g = .001	(mho/cm2)
-	erev = -65	(mV)
-}
-
-ASSIGNED { i	(mA/cm2)}
+	g = 0.002	(mho/cm2) : as in Spencer et al 2012
+	erev = -62	(mV)      : as in Spencer et al 2012       
+    }
+    
+ASSIGNED { 
+    v   (mV)        
+    i	(mA/cm2)}
 
 BREAKPOINT {
 	i = g*(v - erev)
