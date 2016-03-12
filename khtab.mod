@@ -53,15 +53,17 @@ INITIAL {
     n = ninf
 }
 
+LOCAL qt 
+
+
 DERIVATIVE states {
     setrates(v)
     
-    n' = q10*(ninf - n)/ntau
-    p' = q10*(pinf - p)/ptau
+    n' = qt*(ninf - n)/ntau
+    p' = qt*(pinf - p)/ptau
 }
 
 
-LOCAL qt 
 
 PROCEDURE setrates (v){
     

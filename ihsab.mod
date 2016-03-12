@@ -44,13 +44,14 @@ INITIAL {
     r = rinf
 }
 
+LOCAL qt
+
 DERIVATIVE states {
     setrates(v)
     
-    r' = q10*(rinf - r)/rtau
+    r' = qt*(rinf - r)/rtau
 }
 
-LOCAL qt
 
 PROCEDURE setrates() {: computes minf, hinf, mtau, htau at current v
     qt = q10^((celsius - treference)/10.0)

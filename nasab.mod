@@ -1,4 +1,4 @@
-TITLE Sodium current after Spencer 2012
+TITLE Sodium current after Spencer 2012 -> Rothman,Young,Manis-1993
 
 
 UNITS {
@@ -16,10 +16,11 @@ NEURON {
 
 PARAMETER {
     celsius (degC)
-    treference= 33 (degC) : room temp in Baltimore :)
+    treference= 22 (degC) : room temp in Baltimore :)
     ena (mV)
     gbar = 0.07958 (mho/cm2) : that is what RM-03 used
     q10 = 3.0
+    q10h = 10.0
 }
 
 STATE {
@@ -46,23 +47,29 @@ INITIAL {
     h = hinf
 }
 
+
+LOCAL qt,qth, malpha, mbeta, halpha, hbeta
+
 DERIVATIVE states {
     setrates(v)
     
-    m' = q10*(minf - m)/mtau
-    h' = q10*(hinf - h)/htau
+    :m' = qt*(minf - m)/mtau
+    :h' = qt*(hinf - h)/htau
+    m' = malpha*(1-m) - mbeta*m
+    h' = halpha*(1-h) - hbeta*h
 }
 
-LOCAL qt, malpha, mbeta, halpha, hbeta
+
 
 PROCEDURE setrates() {: computes minf, hinf, mtau, htau at current v
     qt = q10^((celsius - treference)/10.0)
+    qth = q10h^((celsius - treference)/10.0)
     
-    malpha = -0.36*(v + 49)/(exp(-(v+49)/3)-1)
-    mbeta = 0.4*(v+58)/(exp((v+58)/20) -1)
+    malpha = -0.36*qt*(v + 49)/(exp(-(v+49)/3)-1)
+    mbeta = 0.4*qt*(v+58)/(exp((v+58)/20) -1)
     
-    halpha = 2.4/(1 + exp((v+68)/3)) + 0.8/(1 + exp(v+61.3))
-    hbeta = 3.6/(1+exp(-(v+21)/10))
+    halpha = 2.4*qt/(1 + exp((v+68)/3)) + 0.8*qth/(1 + exp(v+61.3))
+    hbeta = 3.6*qt/(1+exp(-(v+21)/10))
     
     minf = 1 / (1 + mbeta/malpha)
     hinf = 1/ (1 + hbeta/halpha)

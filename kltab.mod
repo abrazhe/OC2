@@ -62,8 +62,8 @@ LOCAL qt
 DERIVATIVE states {
     setrates(v)
     
-    w' = q10*(winf - w)/wtau
-    z' = q10*(zinf - z)/wtau
+    w' = qt*(winf - w)/wtau
+    z' = qt*(zinf - z)/wtau
 }
 
 
