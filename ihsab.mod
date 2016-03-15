@@ -9,7 +9,7 @@ UNITS {
 NEURON {
     SUFFIX ihsab
      NONSPECIFIC_CURRENT i
-     RANGE ghbar, gh, ih
+     RANGE gbar, gh, ih
      GLOBAL rinf, rtau
  }
 
