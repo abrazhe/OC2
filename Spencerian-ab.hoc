@@ -9,6 +9,9 @@ ndend = 4
 
 create soma, ax_stub, ax_init, dendrites[ndend]
 
+
+full_na = 1000e-9 //S
+
 // --- biophysics --- 
 soma {
     diam = 25 // Spencer. RM-03 have 21, which is close. also, OC could be larger than BC
@@ -20,12 +23,18 @@ soma {
     insert hcno eh_hcno = -38   // taken from BO-00
     insert ihsab eh_ihsab = -38   // as in Spencer
     
+    
     gbar_kltab = 0.0407 // mho/cm2, following Spencer12
     gbar_khtab = 0.0061  // mho/cm2, ---------//--------
     //gbar_hcno = 0.0076     // mho/cm2, ---------//--------
     gbar_hcno = 0 // swit it off
     gbar_ihsab = 0.0076 // following Spencer12
     
+    insert nasab ena = 55 
+    gbar_nasab = 0.0 //no sodium current in soma
+    //gbar_nasab = full_na/(diam*L*3.1415*1e-8) // S/cm2
+
+
     
 }
 
@@ -34,15 +43,15 @@ soma {
 // Spencer et al 2012 model
 
 ax_stub {
-    diam = 3
-    L = 10
+   diam = 3
+   L = 30
 }
 
 ax_init {
-    diam = 3
-    L = 20
-    insert nasab ena = 55 gbar_nasab = 4.244
-    //insert naab ena = 55 gbar_naab = 4.244
+   diam = 3
+   L = 10
+   insert nasab ena = 55 gbar_nasab = 4.244
+   //insert naab ena = 55 gbar_naab = 4.244
 }
 
 for i = 0, ndend-1 dendrites[i] {
@@ -53,10 +62,12 @@ for i = 0, ndend-1 dendrites[i] {
     insert hcno eh_hcno = -38
     insert ihsab eh_ihsab = -38   // as in Spencer
     
-    gbar_kltab = soma.gbar_kltab*0.1
+    //gbar_kltab = soma.gbar_kltab*0.1
     gbar_hcno = soma.gbar_hcno*0.1
-    
-    
+    gbar_ihsab = soma.gbar_ihsab*0.1
+    gbar_kltab = 2.7e-3  // S/cm2 // Table 3 Spencer
+    gbar_ihsab = 0.6e-3 // S/cm2  // Table 3  Spencer
+
 }
 
 forall {
@@ -65,44 +76,11 @@ forall {
     cm = 0.9 //Spencer
     insert leak  // leak is from RM-03   
     gbar_leak = 0.002 // S/cm2 Spencer12
+    erev_leak = -62
     
 }
-
-access soma
-
 
 // --- done with biophysics 
-
-
-// --- Stimulation ---
-
-objectvar soma_stim[2]
-
-soma soma_stim[0] = new IClamp(0.5)
-soma soma_stim[1] = new IClamp(0.5)
-
-
-proc two_pulse_stim() {
-    
-    for i =0,1 {
-        soma_stim[i].dur = 10
-        soma_stim[i].amp = $1 // nA
-        soma_stim[i].del = 50
-    }
-    soma_stim[1].del = 50 + 10
-    soma_stim[1].amp = 2*$1 //nA
-    run()
-}
-
-proc hyperpol_stim() {
-    soma_stim[0].amp = $1
-    soma_stim[0].del = 250
-    soma_stim[0].dur = 50
-    soma_stim[1].amp = 0
-    run()
-} 
-
-// --- done stimulation ---
 
 // --- Connections --- 
 
@@ -114,11 +92,82 @@ for i=0, ndend-1 {
 }
 // --- done connections --- 
 
+
+
+
+
+
+// We have to access some segment, e.g. soma 
+access soma
+
+// --- Stimulation at soma level ---
+
+objectvar step_stim[2]
+objectvar train_stim[6]
+objectvar hyper_stim
+
+hyper_stim = new IClamp(0.5)
+
+soma step_stim[0] = new IClamp(0.5)
+soma step_stim[1] = new IClamp(0.5)
+
+for i=0,5 {
+    soma train_stim[i] = new IClamp(0.5)
+}
+
+proc set_pulse_train(){local amp, dur, period, start
+    amp = $1
+    dur = $2
+    period = $3
+    start = $4
+    for i = 0,5 {
+        train_stim[i].del = start + period*(i+1)
+        train_stim[i].amp = amp
+        train_stim[i].dur = dur
+    }
+}
+
+proc two_pulse_stim() {
+    
+    for i =0,1 {
+        step_stim[i].dur = 10
+        step_stim[i].amp = $1 // nA
+        step_stim[i].del = 50
+    }
+    step_stim[1].del = 50 + 10
+    step_stim[1].amp = 2*$1 //nA
+}
+
+
+proc hyperpol_stim() {
+    hyper_stim.amp = $1
+    hyper_stim.del = 100
+    hyper_stim.dur = 50
+} 
+
+proc do_tests(){
+    set_pulse_train(6, 0.5, 1000/780, 25)
+    two_pulse_stim(3)
+    hyperpol_stim(-15)
+    run()
+}
+
+// --------- Synaptic stimulation ------------------------- 
+create drivercell // dummy cell as a source of NetCon events
+
+
+// -- end synaptic events
+
+
+
+// --- done stimulation ---
+
+
 celsius = 33
 
 // --- Numerics --- 
 //dt = 0.01
-tstop = 100
+tstop = 200
 v_init = -62
 
 // --- Graphs ---
@@ -137,7 +186,9 @@ vg.exec_menu("Keep Lines")
 // --- Running this sh*t --- 
 //initialize()
 
-two_pulse_stim(3)
+do_tests()
+
+//two_pulse_stim(3)
 //two_pulse_stim(5)
 
 //celsius = 37
