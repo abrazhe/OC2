@@ -28,13 +28,13 @@ PARAMETER {
     gbar = 0.016 (mho/cm2)
     zss = 0.5 <0,1>  : steady-state inactivation of glt
     q10 = 3.0
+    ek = -70 (mV)        
 }
 
 
 ASSIGNED {
     v (mV)
     ik (mA/cm2)
-    ek = -70 (mV)    
     gklt (S/cm2)
     winf zinf
     wtau (ms) ztau (ms)
