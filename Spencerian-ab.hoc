@@ -237,3 +237,21 @@ run()
 //two_pulse_stim(3)
 //two_pulse_stim(5)
 
+
+
+// Resting currents // 
+
+//forsec "dendrite" print secname()
+// --- or use SectionList first!!!
+
+// dendrites[0] for (x) print ik_kltab(x)
+
+func summate_dend_klt(){ local isum
+    isum = 0
+    forsec $s1 {
+        print secname()
+        for (x) isum += ik_kltab(x)*diam*L/nseg
+    }
+    return isum*PI*1e-8
+}
+summate_dend_klt("soma") + summate_dend_klt("dend")
