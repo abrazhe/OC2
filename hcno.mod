@@ -4,7 +4,7 @@ TITLE h current for Octopus cells of Cochlear Nucleus
 
 NEURON {
 	SUFFIX hcno
-	NONSPECIFIC_CURRENT i
+	NONSPECIFIC_CURRENT ih
 	RANGE  gbar
 	GLOBAL hinf, tau1,tau2
 }
@@ -42,7 +42,7 @@ UNITS {
 } 
 
 ASSIGNED {
-	i 		(mA/cm2)
+	ih 		(mA/cm2)
 	thegna		(mho/cm2)
 	hinf tau1 tau2 
 }
@@ -53,7 +53,7 @@ STATE { h1 h2 }
 BREAKPOINT {
         SOLVE states METHOD derivimplicit
         thegna = gbar*(h1*frac + h2*(1-frac))
-	i = thegna * (v - eh)
+	ih = thegna * (v - eh)
 } 
 
 INITIAL {

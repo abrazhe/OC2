@@ -8,8 +8,8 @@ UNITS {
 
 NEURON {
     SUFFIX ihsab
-     NONSPECIFIC_CURRENT i
-     RANGE gbar, gh, ih
+     NONSPECIFIC_CURRENT ih
+     RANGE gbar, gh
      GLOBAL rinf, rtau
  }
 
@@ -27,7 +27,7 @@ STATE {
 
 ASSIGNED {
     v (mV)
-    i (mA/cm2)
+    ih (mA/cm2)
     gh (mho/cm2)
     rinf
     rtau (ms)
@@ -36,7 +36,7 @@ ASSIGNED {
 BREAKPOINT {
     SOLVE states METHOD cnexp
     gh = gbar*r
-    i = gh*(v-eh)
+    ih = gh*(v-eh)
 }
 
 INITIAL {
