@@ -13,8 +13,9 @@ NEURON {
     USEION k READ ik, ek 
     USEION na READ ina, ena
     POINTER i_ih
+    POINTER gh
     RANGE erate
-    GLOBAL gratio
+    GLOBAL eh
 }
 
 
@@ -24,6 +25,7 @@ PARAMETER {
     gratio = 5
     ena (mV)
     ek (mV)
+    eh = -43 (mV)
 }
 
 ASSIGNED {
@@ -31,17 +33,31 @@ ASSIGNED {
     ik (mA/cm2)
     ina (mA/cm2)
     erate (pJ/cm^2)
-    i_ih (mA/cm2)  : How to make it read this from NEURON?     
+    i_ih (mA/cm2)  
+    gh (S/cm2)
     
 }
 
 LOCAL gnah  
 LOCAL acc
+LOCAL gr
+LOCAL denom
 
 BREAKPOINT {
-    gnah = i_ih/(v*(gratio+1) - gratio*ek - ena)
+    gr = (ena-eh)/(eh-ek)
+    
+    denom = (v*(gr+1) - gr*ek - ena)
+    
+    : this is not so smart...
+    if ( fabs(v-eh) < 1) {
+        gnah = gh/((ena-v)/(v-ek) + 1)
+    }
+    else{
+        gnah = i_ih/denom
+    }
+    
     ihna = gnah*(v-ena)
-    ihk = gratio*gnah*(v-ek)
+    ihk = gr*gnah*(v-ek)
     
     acc = (ina + ihna)*(v-ena) + (ik + ihk)*(v-ek)
     erate = (1e6)*acc
